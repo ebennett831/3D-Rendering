@@ -1,0 +1,243 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+
+
+public class RenderPanel extends JPanel{
+    
+    private final int HEIGHT;
+    private final int WIDTH;
+
+    private int FPS = 60;
+
+    private BufferedImage buff;
+    private float[][] zBuffer;
+
+    private Vector3 light = new Vector3(-1, -1, -1);
+
+    // shapes and stuff
+    Triangle3D t = new Triangle3D(
+        new Vector3(1, 0, 5),
+        new Vector3(1, 1, 5),
+        new Vector3(-1, 1, 5),
+        Color.RED.getRGB()
+        );
+
+    Triangle3D t2 = new Triangle3D(
+        new Vector3(1, 0, 4),
+        new Vector3(1, 1, 4),
+        new Vector3(-1, 1, 4),
+        Color.GREEN.getRGB()
+        );
+
+    Rectangle3D r = new Rectangle3D(
+        new Vector3(-1, 1, 4),
+        new Vector3(1, 1, 4),
+        new Vector3(1, -1, 4),
+        new Vector3(-1, -1, 4),
+        Color.RED.getRGB()
+        );
+
+    Cube3D c = new Cube3D(new Vector3(0, 0, 5), 2, Color.MAGENTA.getRGB());
+    Cube3D c2;
+
+    ArrayList<Cube3D> list = new ArrayList<>();
+
+    //
+
+    public RenderPanel(int h, int w)
+    {
+        this.HEIGHT = h;
+        this.WIDTH = w;
+
+        setPreferredSize(new Dimension(WIDTH, HEIGHT));
+        
+        buff = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_ARGB);
+        resetZBuffer();
+
+        light = light.normalize();
+    }
+
+    private void resetZBuffer()
+    {
+        zBuffer = new float[HEIGHT][WIDTH];
+        for (int x = 0; x < zBuffer.length; x++)
+            for (int y = 0; y < zBuffer[x].length; y++)
+                zBuffer[x][y] = Float.MAX_VALUE;
+    }
+
+    public Vector3 getLight()
+    {
+        return light;
+    }
+
+    @Override public void paintComponent(Graphics g)
+    {
+        super.paintComponent(g);
+        g.drawImage(buff, 0, 0, null);
+
+    }
+
+    public int getWidth()
+    {
+        return WIDTH;
+    }
+
+    public int getHeight()
+    {
+        return HEIGHT;
+    }
+
+    //game loop
+    public void start() {
+    preStart();
+    Thread loop = new Thread(() -> {
+        while (true) {
+            updateBuffer();   
+            repaint(); // request paintComponent()
+                try {
+                    Thread.sleep(1000/FPS); // ~60 FPS
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        loop.start();
+    }
+
+    public void preStart()
+    {
+    
+        for (int x = -3; x <= 3; x++)
+            for(int z = 1; z <=5; z++)
+            {
+                list.add(new Cube3D(new Vector3(x,2,z),1.0f, Color.GRAY.getRGB()));
+            }
+        
+        c2 = c.copy();
+        c2.translate(-3, 0, 0);
+        c2.setColor(Color.RED.getRGB());
+
+        c.scale(2);
+    }
+
+    //update pixels
+    public void updateBuffer()
+    {
+        for (int x = 0; x < WIDTH; x++)
+            for (int y = 0; y < HEIGHT; y++)
+                buff.setRGB(x, y, Color.BLACK.getRGB());
+        resetZBuffer();
+        
+        //for (Cube3D c : list) c.draw(this);
+
+        c.rotateX(0.05f, c.getCenter());
+        c.rotateZ(-0.01f, c.getCenter());
+        c.draw(this);
+
+        c2.translate(0.05f, 0, 0);
+        c2.rotateXYZ(0.02f, -0.01f, 0, c2.getCenter());
+        c2.draw(this);
+
+        //idea - complex shape = list of multiple shapes and find center by finding the average all the other shapes centers
+        
+    }
+
+    public void drawLine(Vector3 p1, Vector3 p2)
+    {
+        Vector3 direction = p2.subtract(p1);
+        double length = (double) p1.distance(p2);
+        Matrix4x4 translation = Matrix4x4.createTranslation(
+            direction.getX() / (float) length, 
+            direction.getY() / (float) length, 
+            direction.getZ() / (float) length
+        );
+
+        Vector3 line = p1;
+
+        for (int i = 0; i < length; i++)
+        {
+            int x = (int) line.getX();
+            int y = (int) line.getY();
+
+            if (x < WIDTH && x >= 0 && y < HEIGHT && y >= 0)
+            {
+                buff.setRGB(x, y, Color.WHITE.getRGB());
+                line = translation.transform(line);
+            }
+        }
+    }
+
+    public void fillTriangle(Vector3 p1, Vector3 p2, Vector3 p3, int color)
+    {
+        int x1 = (int) p1.getX(); int y1 = (int) p1.getY();
+        int x2 = (int) p2.getX(); int y2 = (int) p2.getY();
+        int x3 = (int) p3.getX(); int y3 = (int) p3.getY();
+
+        //establish bounds for bounding box
+        //also checks bounds
+        int minX = Math.max(0, Math.min(x1, Math.min(x2, x3)));
+        int maxX = Math.min(WIDTH - 1, Math.max(x1, Math.max(x2, x3)));
+        int minY = Math.max(0, Math.min(y1, Math.min(y2, y3)));
+        int maxY = Math.min(HEIGHT - 1, Math.max(y1, Math.max(y2, y3)));
+
+
+        //loop throught each pixel in bounding box
+        for (int x = minX; x <= maxX; x++)
+            for (int y = minY; y <= maxY; y++)
+            {
+                //calculate cross product of each edge for each test point
+                int cp1 = (x2 - x1) * (y - y1) - (y2 - y1) * (x - x1); //1 - 2
+                int cp2 = (x3 - x2) * (y - y2) - (y3 - y2) * (x - x2); //2 - 3
+                int cp3 = (x1 - x3) * (y - y3) - (y1 - y3) * (x - x3); //3 - 1
+
+                //check if all cross procucts have the same sign (+ or -)
+                boolean allPositive = (cp1 >= 0 && cp2 >= 0 && cp3 >= 0);
+                boolean allNegative = (cp1 <= 0 && cp2 <= 0 && cp3 <= 0);
+
+                //zBuffer testing with barycentric coordinates
+                float area = Vector3.area(p1, p2, p3); //main triangle area
+                Vector3 point = new Vector3(x, y, 1); 
+                float w1 = Vector3.area(point, p2, p3) / area; //weight 1
+                float w2 = Vector3.area(p1, point, p3) / area; //weight 2
+                float w3 = Vector3.area(p1, p2, point) / area; //weight 3
+
+                float pz = p1.getZ() * w1 + p2.getZ() * w2 + p3.getZ() * w3; //z depth
+
+                //same sign = test point is in triangle
+                if (allPositive || allNegative)
+                    //make sure test point has a lesser z value than whats on the screen
+                    if (zBuffer[y][x] > pz) // [y][x]
+                    {
+                        buff.setRGB(x, y, color);
+                        zBuffer[y][x] = pz;
+                    }
+                
+            }
+    }
+
+    public static int adjustBrightness(int color, float scale) 
+    {
+        //extract color components
+        int r = (color >> 16) & 0xFF;
+        int g = (color >> 8) & 0xFF;
+        int b = color & 0xFF;
+
+        //optionally keep alpha if using ARGB format
+        int a = (color >> 24) & 0xFF;
+        boolean hasAlpha = (color >>> 24) != 0;
+
+        //apply brightness scale
+        r = Math.min(255, Math.max(0, Math.round(r * scale)));
+        g = Math.min(255, Math.max(0, Math.round(g * scale)));
+        b = Math.min(255, Math.max(0, Math.round(b * scale)));
+
+        //recombine color
+        if (hasAlpha) {
+            return (a << 24) | (r << 16) | (g << 8) | b;
+        } else {
+            return (r << 16) | (g << 8) | b;
+        }
+    }
+}
