@@ -41,6 +41,7 @@ public class RenderPanel extends JPanel{
 
     Cube3D c = new Cube3D(new Vector3(0, 0, 5), 2, Color.MAGENTA.getRGB());
     Cube3D c2;
+    Cube3D c3;
     ComplexShape3D cps;
 
     ArrayList<Cube3D> list = new ArrayList<>();
@@ -117,6 +118,7 @@ public class RenderPanel extends JPanel{
             }
         
         c2 = c.copy();
+        c3 = c.copy();
         c2.translate(-3, 0, 0);
         c.translate(3, 0, 0);
         c2.setColor(Color.RED.getRGB());
@@ -136,8 +138,10 @@ public class RenderPanel extends JPanel{
         
         //for (Cube3D c : list) c.draw(this);
 
-        cps.translate(0,-0.01f, 0);
+        //cps.translate(0,-0.01f, 0);
+        
         cps.draw(this);
+        c3.draw(this);
 
         //idea - complex shape = list of multiple shapes and find center by finding the average all the other shapes centers
         

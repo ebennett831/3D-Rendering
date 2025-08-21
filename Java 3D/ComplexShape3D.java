@@ -22,8 +22,18 @@ public class ComplexShape3D extends Shape3D{
     public Vector3 getCenter()
     {
         Vector3 sum = new Vector3(0, 0, 0);
-        for (Shape3D s : shapes) sum = sum.add(s.getCenter());
+        for (Shape3D s : shapes) sum = sum.add(s.getCenter()); // sum all centers and average out
         return sum.scale(1.0f / shapes.size());
+    }
+
+    public void scale(float x, float y, float z)
+    {
+        for (Shape3D s : shapes) s.scale(x, y, z);
+    }
+
+    public void scale(float scalar)
+    {
+        for (Shape3D s : shapes) s.scale(scalar);
     }
 
     public void rotateX(float angleRadians)
@@ -59,6 +69,18 @@ public class ComplexShape3D extends Shape3D{
     public void draw(RenderPanel rp)
     {
         for (Shape3D s : shapes) s.draw(rp);
+    }
+
+    public ComplexShape3D copy()
+    {
+        HashSet<Shape3D> tempSet = new HashSet<>();
+        for (Shape3D s : shapes) tempSet.add(s.copy()); // copy shape and add to new hashset
+        return new ComplexShape3D(tempSet);
+    }
+
+    public int getColor()
+    {
+        return -1;
     }
 
 }
