@@ -1,7 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
+import java.util.*;
 
 
 public class RenderPanel extends JPanel{
@@ -41,6 +41,7 @@ public class RenderPanel extends JPanel{
 
     Cube3D c = new Cube3D(new Vector3(0, 0, 5), 2, Color.MAGENTA.getRGB());
     Cube3D c2;
+    ComplexShape3D cps;
 
     ArrayList<Cube3D> list = new ArrayList<>();
 
@@ -117,9 +118,12 @@ public class RenderPanel extends JPanel{
         
         c2 = c.copy();
         c2.translate(-3, 0, 0);
+        c.translate(3, 0, 0);
         c2.setColor(Color.RED.getRGB());
 
-        c.scale(2);
+        HashSet<Shape3D> set = new HashSet<>();
+        set.add(c); set.add(c2);
+        cps = new ComplexShape3D(set);
     }
 
     //update pixels
@@ -132,13 +136,8 @@ public class RenderPanel extends JPanel{
         
         //for (Cube3D c : list) c.draw(this);
 
-        c.rotateX(0.05f, c.getCenter());
-        c.rotateZ(-0.01f, c.getCenter());
-        c.draw(this);
-
-        c2.translate(0.05f, 0, 0);
-        c2.rotateXYZ(0.02f, -0.01f, 0, c2.getCenter());
-        c2.draw(this);
+        cps.translate(0,-0.01f, 0);
+        cps.draw(this);
 
         //idea - complex shape = list of multiple shapes and find center by finding the average all the other shapes centers
         

@@ -17,18 +17,18 @@ public abstract class Shape3D {
     public abstract void rotateZ(float angleRadians);
     public abstract void rotateZ(float angleRadians, Vector3 origin);
 
-    public void rotateXYZ(float x, float y, float z) 
+    public void rotateXYZ(float x, float y, float z)
     {
-        rotateX(x);
-        rotateY(y);
-        rotateZ(z);
+        if (x != 0) rotateX(x);
+        if (y != 0) rotateY(y);
+        if (z != 0) rotateZ(z);
     }
 
     public void rotateXYZ(float x, float y, float z, Vector3 origin) 
     {
-        rotateX(x, origin);
-        rotateY(y, origin);
-        rotateZ(z, origin);
+        if (x != 0) rotateX(x, origin);
+        if (y != 0) rotateY(y, origin);
+        if (z != 0) rotateZ(z, origin);
     }
 
     public abstract Vector3 getCenter();
