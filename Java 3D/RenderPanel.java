@@ -139,7 +139,7 @@ public class RenderPanel extends JPanel{
         //for (Cube3D c : list) c.draw(this);
 
         //cps.translate(0,-0.01f, 0);
-        
+        cps.scale(1.01f, 1.01f, 1);
         cps.draw(this);
         c3.draw(this);
 

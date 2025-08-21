@@ -58,7 +58,7 @@ public class ComplexShape3D extends Shape3D{
 
     public void rotateZ(float angleRadians)
     {
-        for (Shape3D s : shapes) s.rotateX(angleRadians);
+        for (Shape3D s : shapes) s.rotateZ(angleRadians);
     }
 
     public void rotateZ(float angleRadians, Vector3 origin)
