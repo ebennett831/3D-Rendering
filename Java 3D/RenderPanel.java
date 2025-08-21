@@ -217,23 +217,20 @@ public class RenderPanel extends JPanel{
             }
     }
 
+    //ai generated to adjust color brightness
     public static int adjustBrightness(int color, float scale) 
     {
-        //extract color components
         int r = (color >> 16) & 0xFF;
         int g = (color >> 8) & 0xFF;
         int b = color & 0xFF;
 
-        //optionally keep alpha if using ARGB format
         int a = (color >> 24) & 0xFF;
         boolean hasAlpha = (color >>> 24) != 0;
 
-        //apply brightness scale
         r = Math.min(255, Math.max(0, Math.round(r * scale)));
         g = Math.min(255, Math.max(0, Math.round(g * scale)));
         b = Math.min(255, Math.max(0, Math.round(b * scale)));
 
-        //recombine color
         if (hasAlpha) {
             return (a << 24) | (r << 16) | (g << 8) | b;
         } else {
