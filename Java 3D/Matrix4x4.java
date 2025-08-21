@@ -57,8 +57,6 @@ public class Matrix4x4 {
             for (int c = 0; c < 4; c++)
                 m[r][c] = r == c ? r == 0 ? x : r == 1 ? y : r == 2 ? z : 1 : 0;
 
-
-        System.out.println(Arrays.deepToString(m));
         return new Matrix4x4(m);
     }
 
