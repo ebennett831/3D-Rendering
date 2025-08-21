@@ -17,6 +17,31 @@ public class Matrix4x4 {
         this.matrix = matrix;
     }
 
+    public float[][] getMatrixArray()
+    {
+        return matrix;
+    }
+
+    public Matrix4x4 multiply(Matrix4x4 otherMatrix)
+    {
+        float[][] other = otherMatrix.getMatrixArray();
+        float[][] resultMatrix = new float[4][4];
+
+        for (int row = 0; row < 4; row++)
+        {
+            for (int col = 0; col < 4; col++)
+            {
+                float sum = 0;
+                sum += this.matrix[row][0] * other[0][col];
+                sum += this.matrix[row][1] * other[1][col];
+                sum += this.matrix[row][2] * other[2][col];
+                sum += this.matrix[row][3] * other[3][col];
+                resultMatrix[row][col] = sum;
+            }
+        }
+        return new Matrix4x4(resultMatrix);
+    }
+
     public void setIdentityMatrix()
     {
         for (int r = 0; r < 4; r++)
