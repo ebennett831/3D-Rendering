@@ -12,7 +12,7 @@ public class Matrix4x4 {
                 matrix[r][c] = 0;
     }
 
-    private Matrix4x4(float[][] matrix)
+    public Matrix4x4(float[][] matrix)
     {
         this.matrix = matrix;
     }
@@ -147,6 +147,20 @@ public class Matrix4x4 {
         projectedY = projectedY * scale + screenHeight / 2;
 
         return new Vector3(projectedX, projectedY, point3D.getZ());
+    }
+
+    public static Vector3 camProjectToScreen(Vector3 projectedPoint, int screenWidth, int screenHeight)
+    {
+
+        float projectedX = projectedPoint.getX() / projectedPoint.getZ();
+        float projectedY = projectedPoint.getY() / projectedPoint.getZ();
+
+        float scale = 200;
+
+        projectedX = projectedX * scale + screenWidth / 2;
+        projectedY = projectedY * scale + screenHeight / 2;
+
+        return new Vector3(projectedX, projectedY, projectedPoint.getZ());
     }
 
     @Override public String toString()

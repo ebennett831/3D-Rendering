@@ -154,7 +154,7 @@ public class Triangle3D extends Shape3D {
 
     }
 
-    public void draw(RenderPanel rp)
+     public void draw(RenderPanel rp)
     {
         Vector3 projectedPoint1 = Matrix4x4.projectToScreen(point1, rp.getWidth(), rp.getHeight());
         Vector3 projectedPoint2 = Matrix4x4.projectToScreen(point2, rp.getWidth(), rp.getHeight());
@@ -172,9 +172,58 @@ public class Triangle3D extends Shape3D {
         float dotNormalized = 0.2f + 0.8f * Math.max(0, dot);
 
         //calculate the new color based on the direction of the face of the triangle
-        int adjustedColor = rp.adjustBrightness(color, dotNormalized);
+        int adjustedColor = RenderPanel.adjustBrightness(color, dotNormalized);
 
         rp.fillTriangle(projectedPoint1, projectedPoint2, projectedPoint3, adjustedColor);
+    }
+
+    public void drawCamPOV(RenderPanel rp)
+    {
+
+        Camera3D cam = rp.getCamera();
+
+        Matrix4x4 viewMatrix = cam.getViewMatrix();
+        Matrix4x4 projectionMatrix = cam.getProjectionMatrix(rp.getWidth(), rp.getHeight());
+
+        //transform using camera view matrix
+        Vector3 camViewPoint1 = viewMatrix.transform(point1);
+        Vector3 camViewPoint2 = viewMatrix.transform(point2);
+        Vector3 camViewPoint3 = viewMatrix.transform(point3);
+
+        //transform using camera projection matrix
+        Vector3 projectedPoint1 = projectionMatrix.transform(camViewPoint1);
+        Vector3 projectedPoint2 = projectionMatrix.transform(camViewPoint2);
+        Vector3 projectedPoint3 = projectionMatrix.transform(camViewPoint3);
+
+        //project to screen coordinates
+        Vector3 screenPoint1 = Matrix4x4.camProjectToScreen(projectedPoint1, rp.getWidth(), rp.getHeight());
+        Vector3 screenPoint2 = Matrix4x4.camProjectToScreen(projectedPoint2, rp.getWidth(), rp.getHeight());
+        Vector3 screenPoint3 = Matrix4x4.camProjectToScreen(projectedPoint3, rp.getWidth(), rp.getHeight());
+
+        //calculate lighting
+
+        Vector3 camEdge1 = camViewPoint2.subtract(camViewPoint1);
+        Vector3 camEdge2 = camViewPoint3.subtract(camViewPoint1);
+        Vector3 normal = camEdge1.cross(camEdge2).normalize();
+
+        // Backface culling - don't render faces pointing away from camera
+        if (normal.getZ() >= 0) return;
+
+        Vector3 light = rp.getLight();
+        light = viewMatrix.transform(light);
+
+        //calculate dot product between normal vector and light source vector
+        //1 = facing directly towards light
+        //-1 = facing directly away from light
+        float dot = normal.dot(light);
+
+        //normalize dot to values between 0.2 & 1.0
+        float dotNormalized = 0.2f + 0.8f * Math.max(0, dot);
+
+        //calculate the new color based on the direction of the face of the triangle
+        int adjustedColor = RenderPanel.adjustBrightness(color, dotNormalized);
+
+        rp.fillTriangle(screenPoint1, screenPoint2, screenPoint3, adjustedColor);
     }
 
     public Vector3 getNormal()

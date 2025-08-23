@@ -133,6 +133,11 @@ public class Cube3D extends Shape3D{
         for (Rectangle3D r : faces) r.draw(rp);
     }
 
+    public void drawCamPOV(RenderPanel rp)
+    {
+        for (Rectangle3D r : faces) r.drawCamPOV(rp);
+    }
+
     public int getColor()
     {
         return color;

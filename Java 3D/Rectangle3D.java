@@ -120,6 +120,12 @@ public class Rectangle3D extends Shape3D{
         triangle2.draw(rp);
     }
 
+    public void drawCamPOV(RenderPanel rp)
+    {
+        triangle1.drawCamPOV(rp);
+        triangle2.drawCamPOV(rp);
+    }
+
     public float width()
     {
         return corners[0].distance(corners[1]);

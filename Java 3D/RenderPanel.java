@@ -15,6 +15,7 @@ public class RenderPanel extends JPanel{
     private float[][] zBuffer;
 
     private Vector3 light = new Vector3(-1, -1, -1);
+    private Camera3D camera = new Camera3D(new Vector3(0, 0, 0), 0, 0, 0, (float) Math.PI / 2);
 
     // shapes and stuff
     Triangle3D t = new Triangle3D(
@@ -46,6 +47,8 @@ public class RenderPanel extends JPanel{
 
     ArrayList<Cube3D> list = new ArrayList<>();
 
+    
+
     //
 
     public RenderPanel(int h, int w)
@@ -74,6 +77,11 @@ public class RenderPanel extends JPanel{
         return light;
     }
 
+    public Camera3D getCamera()
+    {
+        return camera;
+    }
+
     @Override public void paintComponent(Graphics g)
     {
         super.paintComponent(g);
@@ -99,7 +107,7 @@ public class RenderPanel extends JPanel{
             updateBuffer();   
             repaint(); // request paintComponent()
                 try {
-                    Thread.sleep(1000/FPS); // ~60 FPS
+                    Thread.sleep(1000/FPS); //about 60 FPS
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -126,6 +134,9 @@ public class RenderPanel extends JPanel{
         HashSet<Shape3D> set = new HashSet<>();
         set.add(c); set.add(c2);
         cps = new ComplexShape3D(set);
+
+        //c3.rotateX(1.3f, c3.getCenter());
+        //c3.rotateY(0.4f, c3.getCenter());
     }
 
     //update pixels
@@ -138,10 +149,11 @@ public class RenderPanel extends JPanel{
         
         //for (Cube3D c : list) c.draw(this);
 
-        //cps.translate(0,-0.01f, 0);
-        cps.scale(1.01f, 1.01f, 1);
-        cps.draw(this);
-        c3.draw(this);
+        //c3.rotateY(0.01f, c3.getCenter());
+        //c3.rotateX(0.01f, c3.getCenter());
+        c3.rotateY(0.01f);
+        //light = light.rotateY(0.03f, c3.getCenter());
+        c3.drawCamPOV(this);
 
         //idea - complex shape = list of multiple shapes and find center by finding the average all the other shapes centers
         
@@ -211,7 +223,7 @@ public class RenderPanel extends JPanel{
                 //same sign = test point is in triangle
                 if (allPositive || allNegative)
                     //make sure test point has a lesser z value than whats on the screen
-                    if (zBuffer[y][x] > pz) // [y][x]
+                    if (zBuffer[y][x] > pz + 0.001f) // [y][x] 
                     {
                         buff.setRGB(x, y, color);
                         zBuffer[y][x] = pz;
