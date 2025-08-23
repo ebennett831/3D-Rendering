@@ -190,6 +190,11 @@ public class Triangle3D extends Shape3D {
         Vector3 camViewPoint2 = viewMatrix.transform(point2);
         Vector3 camViewPoint3 = viewMatrix.transform(point3);
 
+        
+        // Don't render triangles behind the camera
+        if (camViewPoint1.getZ() <= 0 || camViewPoint2.getZ() <= 0 || camViewPoint3.getZ() <= 0) return; 
+        
+
         //transform using camera projection matrix
         Vector3 projectedPoint1 = projectionMatrix.transform(camViewPoint1);
         Vector3 projectedPoint2 = projectionMatrix.transform(camViewPoint2);
