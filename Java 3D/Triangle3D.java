@@ -1,4 +1,3 @@
-import java.awt.Color;
 
 public class Triangle3D extends Shape3D {
     

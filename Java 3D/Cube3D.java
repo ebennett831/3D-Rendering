@@ -1,4 +1,3 @@
-import java.awt.Color;
 
 public class Cube3D extends Shape3D{
     

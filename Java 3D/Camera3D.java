@@ -71,14 +71,29 @@ public class Camera3D {
         pitch += angleRadians;
     }
 
+    public void rotateX(float angleRadians, Vector3 origin)
+    {
+        position = position.rotateX(angleRadians, origin);
+    }
+
     public void rotateY(float angleRadians)
     {
         yaw += angleRadians;
     }
 
+    public void rotateY(float angleRadians, Vector3 origin)
+    {
+        position = position.rotateY(angleRadians, origin);
+    }
+
     public void rotateZ(float angleRadians)
     {
         roll += angleRadians;
+    }
+
+    public void rotateZ(float angleRadians, Vector3 origin)
+    {
+        position = position.rotateZ(angleRadians, origin);
     }
 
 
