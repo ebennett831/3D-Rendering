@@ -61,5 +61,10 @@ public class Camera3D {
         return new Matrix4x4(projectionMatrixArray);
     }
 
+    public void tranlate(float x, float y, float z)
+    {
+        position = position.add(new Vector3(x, y, z));
+    }
+
 
 }
