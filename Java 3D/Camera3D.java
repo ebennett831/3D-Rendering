@@ -61,6 +61,21 @@ public class Camera3D {
         return new Matrix4x4(projectionMatrixArray);
     }
 
+    public void lookAt(Vector3 target)
+    {
+        Vector3 direction = target.subtract(position);
+        
+        double newYaw = Math.atan2(direction.getX(), direction.getZ());
+
+        double distance = Math.sqrt(direction.getX() * direction.getX() + direction.getZ() * direction.getZ());
+
+        double newPitch = Math.atan2(direction.getY(), distance);
+
+        yaw = (float) newYaw;
+        pitch = (float) newPitch;
+
+    }
+
     public void tranlate(float x, float y, float z)
     {
         position = position.add(new Vector3(-x, -y, -z));

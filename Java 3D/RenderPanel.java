@@ -155,6 +155,7 @@ public class RenderPanel extends JPanel{
         //light = light.rotateY(0.03f, c3.getCenter());
         c3.drawCamPOV(this);
         camera.rotateX(0.01f, c3.getCenter());
+        camera.lookAt(c3.getCenter());
     }
 
     public void drawLine(Vector3 p1, Vector3 p2)
