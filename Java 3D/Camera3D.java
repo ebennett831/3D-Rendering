@@ -63,7 +63,7 @@ public class Camera3D {
 
     public void tranlate(float x, float y, float z)
     {
-        position = position.add(new Vector3(x, y, z));
+        position = position.add(new Vector3(-x, -y, -z));
     }
 
 
