@@ -183,7 +183,11 @@ public class Triangle3D extends Shape3D {
         Vector3 camViewPoint2 = viewMatrix.transform(point2);
         Vector3 camViewPoint3 = viewMatrix.transform(point3);
 
-        
+        //save z values for z buffer
+        float z1 = camViewPoint1.getZ();
+        float z2 = camViewPoint2.getZ();
+        float z3 = camViewPoint3.getZ();
+
         // Don't render triangles behind the camera
         if (camViewPoint1.getZ() <= 0 || camViewPoint2.getZ() <= 0 || camViewPoint3.getZ() <= 0) return; 
         
@@ -211,7 +215,7 @@ public class Triangle3D extends Shape3D {
 
         int adjustedColor = rp.calculateLighting(color, normal, light);
 
-        rp.fillTriangle(screenPoint1, screenPoint2, screenPoint3, adjustedColor);
+        rp.fillTriangle(screenPoint1, screenPoint2, screenPoint3, z1, z2, z3, adjustedColor);
     }
 
     public Vector3 getNormal()

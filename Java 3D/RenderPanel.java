@@ -79,7 +79,7 @@ public class RenderPanel extends JPanel implements KeyListener {
         zBuffer = new float[HEIGHT][WIDTH];
         for (int x = 0; x < zBuffer.length; x++)
             for (int y = 0; y < zBuffer[x].length; y++)
-                zBuffer[x][y] = Float.MAX_VALUE;
+                zBuffer[x][y] = 1000.0f;
     }
 
     public Vector3 getLight()
@@ -141,9 +141,9 @@ public class RenderPanel extends JPanel implements KeyListener {
         c.translate(3, 0, 0);
         c2.setColor(Color.RED.getRGB());
 
-        HashSet<Shape3D> set = new HashSet<>();
-        set.add(c); set.add(c2);
-        cps = new ComplexShape3D(set);
+        //HashSet<Shape3D> set = new HashSet<>();
+        //set.add(c); set.add(c2);
+        //cps = new ComplexShape3D(set);
 
         //c3.rotateX(1.3f, c3.getCenter());
         //c3.rotateY(0.4f, c3.getCenter());
@@ -164,8 +164,11 @@ public class RenderPanel extends JPanel implements KeyListener {
         //c3.rotateY(0.01f, c3.getCenter());
         c3.rotateX(0.01f, c3.getCenter());
         //c3.rotateY(0.01f);
+
+        c.drawCamPOV(this);
+        c2.drawCamPOV(this);
         c3.drawCamPOV(this);
-        cps.drawCamPOV(this);
+        //cps.drawCamPOV(this);
     }
 
     public void drawLine(Vector3 p1, Vector3 p2)
@@ -193,7 +196,7 @@ public class RenderPanel extends JPanel implements KeyListener {
         }
     }
 
-    public void fillTriangle(Vector3 p1, Vector3 p2, Vector3 p3, int color)
+    public void fillTriangle(Vector3 p1, Vector3 p2, Vector3 p3, float z1, float z2, float z3, int color)
     {
         int x1 = (int) p1.getX(); int y1 = (int) p1.getY();
         int x2 = (int) p2.getX(); int y2 = (int) p2.getY();
@@ -227,12 +230,12 @@ public class RenderPanel extends JPanel implements KeyListener {
                 float w2 = Vector3.area(p1, point, p3) / area; //weight 2
                 float w3 = Vector3.area(p1, p2, point) / area; //weight 3
 
-                float pz = p1.getZ() * w1 + p2.getZ() * w2 + p3.getZ() * w3; //z depth
+                float pz = z1 * w1 + z2 * w2 + z3 * w3; //z depth
 
                 //same sign = test point is in triangle
                 if (allPositive || allNegative)
                     //make sure test point has a lesser z value than whats on the screen
-                    if (zBuffer[y][x] > pz + 0.001f) // [y][x] 
+                    if (pz < zBuffer[y][x] - 0.001f) // [y][x] 
                     {
                         buff.setRGB(x, y, color);
                         zBuffer[y][x] = pz;
