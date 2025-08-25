@@ -71,6 +71,11 @@ public class ComplexShape3D extends Shape3D{
         for (Shape3D s : shapes) s.draw(rp);
     }
 
+    public void drawCamPOV(RenderPanel rp)
+    {
+        for (Shape3D s : shapes) s.drawCamPOV(rp);
+    }
+
     public ComplexShape3D copy()
     {
         HashSet<Shape3D> tempSet = new HashSet<>();

@@ -44,6 +44,7 @@ public abstract class Shape3D {
 
     public abstract Vector3 getCenter();
     public abstract void draw(RenderPanel rp);
+    public abstract void drawCamPOV(RenderPanel rp);
 
     public abstract int getColor();
     public void setColor(int newColor) 

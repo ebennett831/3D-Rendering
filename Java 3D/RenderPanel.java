@@ -165,6 +165,7 @@ public class RenderPanel extends JPanel implements KeyListener {
         c3.rotateX(0.01f, c3.getCenter());
         //c3.rotateY(0.01f);
         c3.drawCamPOV(this);
+        cps.drawCamPOV(this);
     }
 
     public void drawLine(Vector3 p1, Vector3 p2)
