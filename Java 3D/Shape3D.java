@@ -4,6 +4,17 @@
 public abstract class Shape3D {
     
     protected int color;
+    protected boolean visible = true;
+
+    public boolean isVisible()
+    {
+        return visible;
+    }
+
+    public void setVisible(boolean visibility)
+    {
+        visible = visibility;
+    }
 
     public abstract void translate(float x, float y, float z);
 

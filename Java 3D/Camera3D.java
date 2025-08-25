@@ -63,19 +63,23 @@ public class Camera3D {
 
     public void lookAt(Vector3 target)
     {
-        Vector3 direction = target.subtract(position);
+        Vector3 direction = target.subtract(position).normalize();
         
-        double newYaw = Math.atan2(direction.getX(), direction.getZ());
-
-        double distance = Math.sqrt(direction.getX() * direction.getX() + direction.getZ() * direction.getZ());
-
-        double newPitch = Math.atan2(direction.getY(), distance);
-
-        yaw = (float) newYaw;
-        pitch = (float) newPitch;
-
+        //yaw 
+        //use atan2 to get angle from x and z 
+        float newYaw = (float) Math.atan2(-direction.getX(), direction.getZ());
+        
+        //pitch
+        //use asin of y
+        float newPitch = (float) Math.asin(direction.getY());
+        
+        yaw = newYaw;
+        pitch = newPitch;
+        
+        //reseting the roll
+        roll = 0;
     }
-
+    
     public void tranlate(float x, float y, float z)
     {
         position = position.add(new Vector3(-x, -y, -z));
@@ -84,6 +88,16 @@ public class Camera3D {
     public void rotateX(float angleRadians)
     {
         pitch += angleRadians;
+        
+        //clamp pitch to prevent flipping over (gimbal lock)
+        float maxPitch = (float) Math.PI / 2.0f - 0.1f; //just under 90 degrees
+        float minPitch = -(float) Math.PI / 2.0f + 0.1f; //just over -90 degrees
+        
+        if (pitch > maxPitch) {
+            pitch = maxPitch;
+        } else if (pitch < minPitch) {
+            pitch = minPitch;
+        }
     }
 
     public void rotateX(float angleRadians, Vector3 origin)
@@ -94,6 +108,14 @@ public class Camera3D {
     public void rotateY(float angleRadians)
     {
         yaw += angleRadians;
+        
+        //keep yaw within -PI to PI range to prevent issues
+        while (yaw > Math.PI) {
+            yaw -= 2 * Math.PI;
+        }
+        while (yaw < -Math.PI) {
+            yaw += 2 * Math.PI;
+        }
     }
 
     public void rotateY(float angleRadians, Vector3 origin)
@@ -109,6 +131,18 @@ public class Camera3D {
     public void rotateZ(float angleRadians, Vector3 origin)
     {
         position = position.rotateZ(angleRadians, origin);
+    }
+
+    public void moveForward(float distance)
+    {
+        //calculate forward direction that matches exactly where camera is looking
+        Vector3 forwardVector = new Vector3(
+            (float) -Math.sin(yaw), //x
+            (float) Math.sin(pitch), //y 
+            (float) Math.cos(yaw) //z
+        );
+        
+        position = position.add(forwardVector.scale(distance));
     }
 
 
