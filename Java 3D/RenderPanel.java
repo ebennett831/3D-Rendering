@@ -18,7 +18,7 @@ public class RenderPanel extends JPanel implements KeyListener {
     private Vector3 light = new Vector3(-0.5f, -1.0f, -0.8f);
     private float ambientLight = 0.3f;  
     private float lightIntensity = 1.2f; 
-    private Camera3D camera = new Camera3D(new Vector3(0.5f, -2, 0), 0, 0, 0, (float) Math.PI / 2);
+    private Camera3D camera = new Camera3D(new Vector3(0, 0, 0), 0, 0, 0, (float) Math.PI / 2);
     
     //track pressed keys
     private Set<Integer> pressedKeys = new HashSet<>();
@@ -79,7 +79,7 @@ public class RenderPanel extends JPanel implements KeyListener {
         zBuffer = new float[HEIGHT][WIDTH];
         for (int x = 0; x < zBuffer.length; x++)
             for (int y = 0; y < zBuffer[x].length; y++)
-                zBuffer[x][y] = 1000.0f;
+                zBuffer[x][y] = Float.MAX_VALUE;
     }
 
     public Vector3 getLight()
@@ -138,12 +138,12 @@ public class RenderPanel extends JPanel implements KeyListener {
         c2 = c.copy();
         c3 = c.copy();
         c2.translate(-3, 0, 0);
-        c.translate(3, 0, 0);
+        c.translate(0, 3, 0);
         c2.setColor(Color.RED.getRGB());
 
-        //HashSet<Shape3D> set = new HashSet<>();
-        //set.add(c); set.add(c2);
-        //cps = new ComplexShape3D(set);
+        HashSet<Shape3D> set = new HashSet<>();
+        set.add(c); set.add(c2); set.add(c3);
+        cps = new ComplexShape3D(set);
 
         //c3.rotateX(1.3f, c3.getCenter());
         //c3.rotateY(0.4f, c3.getCenter());
@@ -165,9 +165,12 @@ public class RenderPanel extends JPanel implements KeyListener {
         c3.rotateX(0.01f, c3.getCenter());
         //c3.rotateY(0.01f);
 
-        c.drawCamPOV(this);
-        c2.drawCamPOV(this);
-        c3.drawCamPOV(this);
+        c.rotateX(0.02f, c3.getCenter());
+        c2.rotateY(-0.03f, c3.getCenter());
+
+        //cps.rotateZ(0.05f, cps.getCenter());
+
+        cps.drawCamPOV(this);
         //cps.drawCamPOV(this);
     }
 
@@ -244,7 +247,6 @@ public class RenderPanel extends JPanel implements KeyListener {
             }
     }
 
-    //lighting calculation
     public int calculateLighting(int baseColor, Vector3 normal, Vector3 lightDirection) {
 
         //dot product between normal and light

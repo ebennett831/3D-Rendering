@@ -166,7 +166,7 @@ public class Triangle3D extends Shape3D {
 
         int adjustedColor = rp.calculateLighting(color, normal, light);
 
-        rp.fillTriangle(projectedPoint1, projectedPoint2, projectedPoint3, adjustedColor);
+        rp.fillTriangle(projectedPoint1, projectedPoint2, projectedPoint3, point1.getZ(), point2.getZ(), point3.getZ(), adjustedColor);
     }
 
     public void drawCamPOV(RenderPanel rp)
@@ -189,8 +189,7 @@ public class Triangle3D extends Shape3D {
         float z3 = camViewPoint3.getZ();
 
         // Don't render triangles behind the camera
-        if (camViewPoint1.getZ() <= 0 || camViewPoint2.getZ() <= 0 || camViewPoint3.getZ() <= 0) return; 
-        
+        if (camViewPoint1.getZ() <= 0.5f || camViewPoint2.getZ() <= 0.5f || camViewPoint3.getZ() <= 0.5f) return; 
 
         //transform using camera projection matrix
         Vector3 projectedPoint1 = projectionMatrix.transform(camViewPoint1);
