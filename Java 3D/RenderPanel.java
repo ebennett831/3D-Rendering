@@ -11,6 +11,7 @@ public class RenderPanel extends JPanel implements KeyListener {
     private final int WIDTH;
 
     private int FPS = 60;
+    private float renderDistance = 50.0f;
 
     private BufferedImage buff;
     private float[][] zBuffer;
@@ -109,6 +110,11 @@ public class RenderPanel extends JPanel implements KeyListener {
         return HEIGHT;
     }
 
+    public float getRenderDistance()
+    {
+        return renderDistance;
+    }
+
     //game loop
     public void start() {
     preStart();
@@ -144,6 +150,8 @@ public class RenderPanel extends JPanel implements KeyListener {
         HashSet<Shape3D> set = new HashSet<>();
         set.add(c); set.add(c2); set.add(c3);
         cps = new ComplexShape3D(set);
+
+        c3.setColor(Color.GREEN.getRGB());
 
         //c3.rotateX(1.3f, c3.getCenter());
         //c3.rotateY(0.4f, c3.getCenter());

@@ -175,6 +175,20 @@ public class Triangle3D extends Shape3D {
 
         Camera3D cam = rp.getCamera();
 
+        //early rejections
+        Vector3 triangleCenter = getCenter();
+        float distanceToCamera = triangleCenter.distance(cam.position);
+        if (distanceToCamera > rp.getRenderDistance()) return; //skip far triangles
+
+        //behind camera check
+        Vector3 cameraToTriangle = triangleCenter.subtract(cam.position);
+        Vector3 cameraForward = new Vector3(
+            (float) -Math.sin(cam.yaw), 
+            (float) Math.sin(cam.pitch), 
+            (float) Math.cos(cam.yaw)
+        );
+        if (cameraToTriangle.dot(cameraForward) < 0) return; //triangle behind camera
+
         Matrix4x4 viewMatrix = cam.getViewMatrix();
         Matrix4x4 projectionMatrix = cam.getProjectionMatrix(rp.getWidth(), rp.getHeight());
 
