@@ -1,4 +1,3 @@
-import java.awt.Color;
 
 public class Triangle3D extends Shape3D {
     
@@ -154,8 +153,10 @@ public class Triangle3D extends Shape3D {
 
     }
 
-    public void draw(RenderPanel rp)
+     public void draw(RenderPanel rp)
     {
+        if (!visible) return;
+
         Vector3 projectedPoint1 = Matrix4x4.projectToScreen(point1, rp.getWidth(), rp.getHeight());
         Vector3 projectedPoint2 = Matrix4x4.projectToScreen(point2, rp.getWidth(), rp.getHeight());
         Vector3 projectedPoint3 = Matrix4x4.projectToScreen(point3, rp.getWidth(), rp.getHeight());
@@ -163,18 +164,71 @@ public class Triangle3D extends Shape3D {
         Vector3 normal = getNormal();
         Vector3 light = rp.getLight();
 
-        //calculate dot product between normal vector and light source vector
-        //1 = facing directly towards light
-        //-1 = facing directly away from light
-        float dot = normal.dot(light);
+        int adjustedColor = rp.calculateLighting(color, normal, light);
 
-        //normalize dot to values between 0.2 & 1.0
-        float dotNormalized = 0.2f + 0.8f * Math.max(0, dot);
+        rp.fillTriangle(projectedPoint1, projectedPoint2, projectedPoint3, point1.getZ(), point2.getZ(), point3.getZ(), adjustedColor);
+    }
 
-        //calculate the new color based on the direction of the face of the triangle
-        int adjustedColor = rp.adjustBrightness(color, dotNormalized);
+    public void drawCamPOV(RenderPanel rp)
+    {
+        if (!visible) return;
 
-        rp.fillTriangle(projectedPoint1, projectedPoint2, projectedPoint3, adjustedColor);
+        Camera3D cam = rp.getCamera();
+
+        //early rejections
+        Vector3 triangleCenter = getCenter();
+        float distanceToCamera = triangleCenter.distance(cam.position);
+        if (distanceToCamera > rp.getRenderDistance()) return; //skip far triangles
+
+        //behind camera check
+        Vector3 cameraToTriangle = triangleCenter.subtract(cam.position);
+        Vector3 cameraForward = new Vector3(
+            (float) -Math.sin(cam.yaw), 
+            (float) Math.sin(cam.pitch), 
+            (float) Math.cos(cam.yaw)
+        );
+        if (cameraToTriangle.dot(cameraForward) < 0) return; //triangle behind camera
+
+        Matrix4x4 viewMatrix = cam.getViewMatrix();
+        Matrix4x4 projectionMatrix = cam.getProjectionMatrix(rp.getWidth(), rp.getHeight());
+
+        //transform using camera view matrix
+        Vector3 camViewPoint1 = viewMatrix.transform(point1);
+        Vector3 camViewPoint2 = viewMatrix.transform(point2);
+        Vector3 camViewPoint3 = viewMatrix.transform(point3);
+
+        //save z values for z buffer
+        float z1 = camViewPoint1.getZ();
+        float z2 = camViewPoint2.getZ();
+        float z3 = camViewPoint3.getZ();
+
+        // Don't render triangles behind the camera
+        if (camViewPoint1.getZ() <= 0.5f || camViewPoint2.getZ() <= 0.5f || camViewPoint3.getZ() <= 0.5f) return; 
+
+        //transform using camera projection matrix
+        Vector3 projectedPoint1 = projectionMatrix.transform(camViewPoint1);
+        Vector3 projectedPoint2 = projectionMatrix.transform(camViewPoint2);
+        Vector3 projectedPoint3 = projectionMatrix.transform(camViewPoint3);
+
+        //project to screen coordinates
+        Vector3 screenPoint1 = Matrix4x4.camProjectToScreen(projectedPoint1, rp.getWidth(), rp.getHeight());
+        Vector3 screenPoint2 = Matrix4x4.camProjectToScreen(projectedPoint2, rp.getWidth(), rp.getHeight());
+        Vector3 screenPoint3 = Matrix4x4.camProjectToScreen(projectedPoint3, rp.getWidth(), rp.getHeight());
+
+        //calculate lighting
+        Vector3 camEdge1 = camViewPoint2.subtract(camViewPoint1);
+        Vector3 camEdge2 = camViewPoint3.subtract(camViewPoint1);
+        Vector3 normal = camEdge1.cross(camEdge2).normalize();
+
+        //backface culling; don't render faces pointing away from camera
+        if (normal.getZ() >= 0) return;
+
+        Vector3 light = rp.getLight();
+        light = viewMatrix.transform(light);
+
+        int adjustedColor = rp.calculateLighting(color, normal, light);
+
+        rp.fillTriangle(screenPoint1, screenPoint2, screenPoint3, z1, z2, z3, adjustedColor);
     }
 
     public Vector3 getNormal()

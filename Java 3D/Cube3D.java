@@ -1,4 +1,3 @@
-import java.awt.Color;
 
 public class Cube3D extends Shape3D{
     
@@ -131,6 +130,11 @@ public class Cube3D extends Shape3D{
     public void draw(RenderPanel rp)
     {
         for (Rectangle3D r : faces) r.draw(rp);
+    }
+
+    public void drawCamPOV(RenderPanel rp)
+    {
+        for (Rectangle3D r : faces) r.drawCamPOV(rp);
     }
 
     public int getColor()

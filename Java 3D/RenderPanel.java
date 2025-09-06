@@ -1,20 +1,28 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.awt.event.*;
 import java.util.*;
 
 
-public class RenderPanel extends JPanel{
+public class RenderPanel extends JPanel implements KeyListener {
     
     private final int HEIGHT;
     private final int WIDTH;
 
     private int FPS = 60;
+    private float renderDistance = 50.0f;
 
     private BufferedImage buff;
     private float[][] zBuffer;
 
-    private Vector3 light = new Vector3(-1, -1, -1);
+    private Vector3 light = new Vector3(-0.5f, -1.0f, -0.8f);
+    private float ambientLight = 0.3f;  
+    private float lightIntensity = 1.2f; 
+    private Camera3D camera = new Camera3D(new Vector3(0, 0, 0), 0, 0, 0, (float) Math.PI / 2);
+    
+    //track pressed keys
+    private Set<Integer> pressedKeys = new HashSet<>();
 
     // shapes and stuff
     Triangle3D t = new Triangle3D(
@@ -46,6 +54,8 @@ public class RenderPanel extends JPanel{
 
     ArrayList<Cube3D> list = new ArrayList<>();
 
+    
+
     //
 
     public RenderPanel(int h, int w)
@@ -59,6 +69,10 @@ public class RenderPanel extends JPanel{
         resetZBuffer();
 
         light = light.normalize();
+
+        setFocusable(true);
+        addKeyListener(this);
+        requestFocusInWindow();
     }
 
     private void resetZBuffer()
@@ -72,6 +86,11 @@ public class RenderPanel extends JPanel{
     public Vector3 getLight()
     {
         return light;
+    }
+
+    public Camera3D getCamera()
+    {
+        return camera;
     }
 
     @Override public void paintComponent(Graphics g)
@@ -91,6 +110,11 @@ public class RenderPanel extends JPanel{
         return HEIGHT;
     }
 
+    public float getRenderDistance()
+    {
+        return renderDistance;
+    }
+
     //game loop
     public void start() {
     preStart();
@@ -99,7 +123,7 @@ public class RenderPanel extends JPanel{
             updateBuffer();   
             repaint(); // request paintComponent()
                 try {
-                    Thread.sleep(1000/FPS); // ~60 FPS
+                    Thread.sleep(1000/FPS); //about 60 FPS
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -120,17 +144,24 @@ public class RenderPanel extends JPanel{
         c2 = c.copy();
         c3 = c.copy();
         c2.translate(-3, 0, 0);
-        c.translate(3, 0, 0);
+        c.translate(0, 3, 0);
         c2.setColor(Color.RED.getRGB());
 
         HashSet<Shape3D> set = new HashSet<>();
-        set.add(c); set.add(c2);
+        set.add(c); set.add(c2); set.add(c3);
         cps = new ComplexShape3D(set);
+
+        c3.setColor(Color.GREEN.getRGB());
+
+        //c3.rotateX(1.3f, c3.getCenter());
+        //c3.rotateY(0.4f, c3.getCenter());
     }
 
     //update pixels
     public void updateBuffer()
     {
+        processInput();
+        
         for (int x = 0; x < WIDTH; x++)
             for (int y = 0; y < HEIGHT; y++)
                 buff.setRGB(x, y, Color.BLACK.getRGB());
@@ -138,13 +169,17 @@ public class RenderPanel extends JPanel{
         
         //for (Cube3D c : list) c.draw(this);
 
-        //cps.translate(0,-0.01f, 0);
-        cps.scale(1.01f, 1.01f, 1);
-        cps.draw(this);
-        c3.draw(this);
+        //c3.rotateY(0.01f, c3.getCenter());
+        c3.rotateX(0.01f, c3.getCenter());
+        //c3.rotateY(0.01f);
 
-        //idea - complex shape = list of multiple shapes and find center by finding the average all the other shapes centers
-        
+        c.rotateX(0.02f, c3.getCenter());
+        c2.rotateY(-0.03f, c3.getCenter());
+
+        //cps.rotateZ(0.05f, cps.getCenter());
+
+        cps.drawCamPOV(this);
+        //cps.drawCamPOV(this);
     }
 
     public void drawLine(Vector3 p1, Vector3 p2)
@@ -172,7 +207,7 @@ public class RenderPanel extends JPanel{
         }
     }
 
-    public void fillTriangle(Vector3 p1, Vector3 p2, Vector3 p3, int color)
+    public void fillTriangle(Vector3 p1, Vector3 p2, Vector3 p3, float z1, float z2, float z3, int color)
     {
         int x1 = (int) p1.getX(); int y1 = (int) p1.getY();
         int x2 = (int) p2.getX(); int y2 = (int) p2.getY();
@@ -206,12 +241,12 @@ public class RenderPanel extends JPanel{
                 float w2 = Vector3.area(p1, point, p3) / area; //weight 2
                 float w3 = Vector3.area(p1, p2, point) / area; //weight 3
 
-                float pz = p1.getZ() * w1 + p2.getZ() * w2 + p3.getZ() * w3; //z depth
+                float pz = z1 * w1 + z2 * w2 + z3 * w3; //z depth
 
                 //same sign = test point is in triangle
                 if (allPositive || allNegative)
                     //make sure test point has a lesser z value than whats on the screen
-                    if (zBuffer[y][x] > pz) // [y][x]
+                    if (pz < zBuffer[y][x] - 0.001f) // [y][x] 
                     {
                         buff.setRGB(x, y, color);
                         zBuffer[y][x] = pz;
@@ -220,8 +255,23 @@ public class RenderPanel extends JPanel{
             }
     }
 
-    //ai generated to adjust color brightness
+    public int calculateLighting(int baseColor, Vector3 normal, Vector3 lightDirection) {
+
+        //dot product between normal and light
+        float dot = normal.dot(lightDirection);
+        
+        //apply lighting
+        float lightingFactor = Math.min(1.0f, ambientLight + (Math.max(0, dot) * lightIntensity));
+        
+        return adjustBrightness(baseColor, lightingFactor);
+    }
+
     public static int adjustBrightness(int color, float scale) 
+    {
+        return adjustBrightness(color, scale, 0.3f, 1.2f);
+    }
+    
+    public static int adjustBrightness(int color, float scale, float ambient, float intensity) 
     {
         int r = (color >> 16) & 0xFF;
         int g = (color >> 8) & 0xFF;
@@ -230,9 +280,11 @@ public class RenderPanel extends JPanel{
         int a = (color >> 24) & 0xFF;
         boolean hasAlpha = (color >>> 24) != 0;
 
-        r = Math.min(255, Math.max(0, Math.round(r * scale)));
-        g = Math.min(255, Math.max(0, Math.round(g * scale)));
-        b = Math.min(255, Math.max(0, Math.round(b * scale)));
+        float lightingFactor = Math.min(1.0f, ambient + (scale * intensity));
+        
+        r = Math.min(255, Math.max(0, Math.round(r * lightingFactor)));
+        g = Math.min(255, Math.max(0, Math.round(g * lightingFactor)));
+        b = Math.min(255, Math.max(0, Math.round(b * lightingFactor)));
 
         if (hasAlpha) {
             return (a << 24) | (r << 16) | (g << 8) | b;
@@ -240,4 +292,55 @@ public class RenderPanel extends JPanel{
             return (r << 16) | (g << 8) | b;
         }
     }
+
+    //key events
+
+    @Override public void keyPressed(KeyEvent e) {
+
+        if (e.getKeyCode() == KeyEvent.VK_ENTER)
+        {
+            camera.lookAt(c3.getCenter());
+            return;
+        }
+        pressedKeys.add(e.getKeyCode());
+    }
+
+    @Override public void keyReleased(KeyEvent e) {
+        pressedKeys.remove(e.getKeyCode());
+    }
+
+    @Override public void keyTyped(KeyEvent e) {}
+    
+    //process all currently pressed keys
+    private void processInput() {
+        float moveSpeed = 0.1f;
+        float rotateSpeed = 0.05f;
+        
+        if (pressedKeys.contains(KeyEvent.VK_W)) {
+            camera.rotateX(rotateSpeed);
+        }
+        if (pressedKeys.contains(KeyEvent.VK_S)) {
+            camera.rotateX(-rotateSpeed);
+        }
+        if (pressedKeys.contains(KeyEvent.VK_A)) {
+            camera.rotateY(-rotateSpeed);
+        }
+        if (pressedKeys.contains(KeyEvent.VK_D)) {
+            camera.rotateY(rotateSpeed);
+        }
+        if (pressedKeys.contains(KeyEvent.VK_SPACE)) {
+            camera.tranlate(0, -moveSpeed, 0);
+        }
+        if (pressedKeys.contains(KeyEvent.VK_SHIFT)) {
+            camera.tranlate(0, moveSpeed, 0);
+        }
+        if (pressedKeys.contains(KeyEvent.VK_UP)) {
+            camera.moveForward(moveSpeed);
+        }
+        if (pressedKeys.contains(KeyEvent.VK_DOWN)) {
+            camera.moveForward(-moveSpeed);
+        }
+    }
+
+
 }
