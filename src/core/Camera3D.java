@@ -1,15 +1,19 @@
 
+package core;
+
+import math.Vector3;
+import math.Matrix4x4;
 
 public class Camera3D {
     
 
-    Vector3 position;
+    public Vector3 position;
 
     //angles in radians
-    float pitch; //x axis
-    float yaw; //y axis
-    float roll; //z axis
-    float fov; //usually 1 - 1.5
+    public float pitch; //x axis
+    public float yaw; //y axis
+    public float roll; //z axis
+    public float fov; //usually 1 - 1.5
 
 
     public Camera3D(Vector3 position, float pitch, float yaw, float roll, float fov)
