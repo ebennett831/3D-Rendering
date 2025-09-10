@@ -1,8 +1,8 @@
-import javax.swing.*;
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
 import java.util.*;
+import javax.swing.*;
 
 
 public class RenderPanel extends JPanel implements KeyListener {
@@ -205,6 +205,48 @@ public class RenderPanel extends JPanel implements KeyListener {
                 line = translation.transform(line);
             }
         }
+    }
+
+    public void fillTriangleScanLine(Vector3 p1, Vector3 p2, Vector3 p3, float z1, float z2, float z3, int color)
+    {
+        // sorting verticies by y value top to bottom
+        Vector3 temp;
+        float tempf;
+
+        // check 1 vs 2
+        if (p1.getY() < p2.getY())
+        {
+            temp = p1; tempf = z1;
+            p1 = p2; z1 = z2;
+            p2 = temp; z2 = tempf;
+
+            // check 2 vs 3
+            if (p2.getY() < p3.getY())
+            {
+                temp = p2; tempf = z2;
+                p2 = p3; z2 = z3;
+                p3 = temp; z3 = tempf;
+
+            }
+        }
+
+        //check 1 vs 3
+        else if (p1.getY() < p3.getY())
+        {
+            temp = p1; tempf = z1;
+            p1 = p3; z1 = z3;
+            p3 = temp; z3 = tempf;
+
+            // check 2 vs 3
+            if (p2.getY() < p3.getY())
+            {
+                temp = p2; tempf = z2;
+                p2 = p3; z2 = z3;
+                p3 = temp; z3 = tempf;
+
+            }
+        }
+
     }
 
     public void fillTriangle(Vector3 p1, Vector3 p2, Vector3 p3, float z1, float z2, float z3, int color)
