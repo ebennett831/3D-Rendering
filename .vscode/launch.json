@@ -1,0 +1,25 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Main",
+            "request": "launch",
+            "mainClass": "core.Main",
+            "projectName": "3D-Rendering_db5d6556"
+        },
+        {
+            "type": "java",
+            "name": "Run 3D Renderer",
+            "request": "launch",
+            "mainClass": "core.Main",
+            "projectName": "3D-Rendering",
+            "classPaths": [
+                "bin"
+            ],
+            "sourcePaths": [
+                "src"
+            ]
+        }
+    ]
+}
