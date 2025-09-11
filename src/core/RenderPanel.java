@@ -257,39 +257,53 @@ public class RenderPanel extends JPanel implements KeyListener {
         Vector3 leftTopVertex2, leftBottomVertex2;
         Vector3 rightTopVertex2, rightBottomVertex2;
 
+        float ltz, lbz, rtz, rbz;
+        float ltz2, lbz2, rtz2, rbz2;
+
         //vertex is left
         if (p2IsLeft)   
         {
-            leftTopVertex = p1; 
-            leftBottomVertex = p2;
+            leftTopVertex = p1; ltz = z1;
+            leftBottomVertex = p2; lbz = z2;
 
-            rightTopVertex = p1;
-            rightBottomVertex = p3;
+            rightTopVertex = p1; rtz = z1;
+            rightBottomVertex = p3; rbz = z3;
 
-            leftTopVertex2 = p2;
-            leftBottomVertex2 = p3;
+            leftTopVertex2 = p2; ltz2 = z2;
+            leftBottomVertex2 = p3; lbz2 = z3;
             
-            rightTopVertex2 = p1;
-            rightBottomVertex2 = p3;
+            rightTopVertex2 = p1; rtz2 = z1;
+            rightBottomVertex2 = p3; rbz2 = z3;
         }
 
         //vertex is right
         else
         {
-            leftTopVertex = p1; 
-            leftBottomVertex = p3;
+            leftTopVertex = p1; ltz = z1;
+            leftBottomVertex = p3; lbz = z3;
 
-            rightTopVertex = p1;
-            rightBottomVertex = p2;
+            rightTopVertex = p1; rtz = z1;
+            rightBottomVertex = p2; rbz = z2;
 
-            leftTopVertex2 = p1;
-            leftBottomVertex2 = p3;
+            leftTopVertex2 = p1; ltz2 = z1;
+            leftBottomVertex2 = p3; lbz2 = z3;
 
-            rightTopVertex2 = p2;
-            rightBottomVertex2 = p3;
+            rightTopVertex2 = p2; rtz2 = z2;
+            rightBottomVertex2 = p3; rbz2 = z3;
         }
 
-        
+        //calculate deltas
+        float leftDeltaX = (leftBottomVertex.getX() - leftTopVertex.getX()) / (leftBottomVertex.getY() - leftTopVertex.getY()); 
+        float leftDeltaZ = (lbz - ltz) / (leftBottomVertex.getY() - leftTopVertex.getY());
+        float rightDeltaX = (rightBottomVertex.getX() - rightTopVertex.getX()) / (rightBottomVertex.getY() - rightTopVertex.getY());
+        float rightDeltaZ = (rbz - rtz) / (rightBottomVertex.getY() - rightTopVertex.getY());
+        float leftDeltaX2 = (leftBottomVertex2.getX() - leftTopVertex2.getX()) / (leftBottomVertex2.getY() - leftTopVertex2.getY()); 
+        float leftDeltaZ2 = (lbz2 - ltz2) / (leftBottomVertex2.getY() - leftTopVertex2.getY());
+        float rightDeltaX2 = (rightBottomVertex2.getX() - rightTopVertex2.getX()) / (rightBottomVertex2.getY() - rightTopVertex2.getY());
+        float rightDeltaZ2 = (rbz2 - rtz2) / (rightBottomVertex2.getY() - rightTopVertex2.getY());
+
+
+
 
         
 
