@@ -241,8 +241,19 @@ public class RenderPanel extends JPanel implements KeyListener {
             temp = p2; tempf = z2;
             p2 = p3; z2 = z3;
             p3 = temp; z3 = tempf;
-
         }
+
+        //linear interpolation to find the x of
+        //the line between p1 & p3 when Y = p2.getY() 
+        float t = (p2.getY() - p1.getY()) / (p3.getY() - p1.getY());
+        float xInt = p1.getX() + t * (p3.getX() - p1.getX());
+
+        //middle vertex: right of left of triangle
+        boolean p2IsLeft = p2.getY() < xInt;
+
+        
+
+
 
     }
 
