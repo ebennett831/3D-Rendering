@@ -1,10 +1,10 @@
 
 package geometry;
 
-import math.Vector3;
-import math.Matrix4x4;
-import core.RenderPanel;
 import core.Camera3D;
+import core.RenderPanel;
+import math.Matrix4x4;
+import math.Vector3;
 
 public class Triangle3D extends Shape3D {
     
@@ -173,7 +173,7 @@ public class Triangle3D extends Shape3D {
 
         int adjustedColor = rp.calculateLighting(color, normal, light);
 
-        rp.fillTriangle(projectedPoint1, projectedPoint2, projectedPoint3, point1.getZ(), point2.getZ(), point3.getZ(), adjustedColor);
+        rp.fillTriangleScanLine(projectedPoint1, projectedPoint2, projectedPoint3, point1.getZ(), point2.getZ(), point3.getZ(), adjustedColor);
     }
 
     public void drawCamPOV(RenderPanel rp)
@@ -235,7 +235,7 @@ public class Triangle3D extends Shape3D {
 
         int adjustedColor = rp.calculateLighting(color, normal, light);
 
-        rp.fillTriangle(screenPoint1, screenPoint2, screenPoint3, z1, z2, z3, adjustedColor);
+        rp.fillTriangleScanLine(screenPoint1, screenPoint2, screenPoint3, z1, z2, z3, adjustedColor);
     }
 
     public Vector3 getNormal()

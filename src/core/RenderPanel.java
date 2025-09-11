@@ -1,4 +1,3 @@
-
 package core;
 
 import geometry.*;
@@ -172,20 +171,18 @@ public class RenderPanel extends JPanel implements KeyListener {
             for (int y = 0; y < HEIGHT; y++)
                 buff.setRGB(x, y, Color.BLACK.getRGB());
         resetZBuffer();
-        
-        //for (Cube3D c : list) c.draw(this);
 
-        //c3.rotateY(0.01f, c3.getCenter());
+        /* 
         c3.rotateX(0.01f, c3.getCenter());
-        //c3.rotateY(0.01f);
 
         c.rotateX(0.02f, c3.getCenter());
         c2.rotateY(-0.03f, c3.getCenter());
 
-        //cps.rotateZ(0.05f, cps.getCenter());
 
         cps.drawCamPOV(this);
-        //cps.drawCamPOV(this);
+        */
+
+        t.drawCamPOV(this);
     }
 
     public void drawLine(Vector3 p1, Vector3 p2)
@@ -321,6 +318,31 @@ public class RenderPanel extends JPanel implements KeyListener {
         //upper triangle loop
         for (int y = startY; y >= midY; y--)
         {
+            for (int x = (int) currentLeftX; x < currentRightX; x++)
+            {
+                //bounds checking
+                if (x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT)
+                {
+                    //linear z interpolation along the scanline
+                    float scanlineWidth = currentRightX - currentLeftX;
+                    float pz;
+                    if (scanlineWidth > 0) {
+                        float t2 = (x - currentLeftX) / scanlineWidth; 
+                        pz = currentLeftZ + t2 * (currentRightZ - currentLeftZ);
+                    } else {
+                        pz = currentLeftZ; //use left z if no width
+                    }
+    
+                    //make sure test point has a lesser z value than whats on the screen
+                    if (pz < zBuffer[y][x] - 0.001f) // [y][x] 
+                    {
+                        buff.setRGB(x, y, color);
+                        zBuffer[y][x] = pz;
+                    }
+                }
+            }      
+
+            //update positions
             currentLeftX += leftDeltaX;
             currentRightX += rightDeltaX;
 
@@ -337,6 +359,31 @@ public class RenderPanel extends JPanel implements KeyListener {
         //lower triangle loop
         for (int y = midY; y >= endY; y--)
         {
+            for (int x = (int) currentLeftX; x < currentRightX; x++)
+            {
+                //bounds checking
+                if (x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT)
+                {
+                    //linear z interpolation along the scanline
+                    float scanlineWidth = currentRightX - currentLeftX;
+                    float pz;
+                    if (scanlineWidth > 0) {
+                        float t2 = (x - currentLeftX) / scanlineWidth; 
+                        pz = currentLeftZ + t2 * (currentRightZ - currentLeftZ);
+                    } else {
+                        pz = currentLeftZ; //use left z if no width
+                    }
+    
+                    //make sure test point has a lesser z value than whats on the screen
+                    if (pz < zBuffer[y][x] - 0.001f) // [y][x] 
+                    {
+                        buff.setRGB(x, y, color);
+                        zBuffer[y][x] = pz;
+                    }
+                }
+            }  
+
+            //update positions
             currentLeftX += leftDeltaX2;
             currentRightX += rightDeltaX2;
 
@@ -352,7 +399,7 @@ public class RenderPanel extends JPanel implements KeyListener {
 
     }
 
-    public void fillTriangle(Vector3 p1, Vector3 p2, Vector3 p3, float z1, float z2, float z3, int color)
+    public void fillTriangleBoundingBox(Vector3 p1, Vector3 p2, Vector3 p3, float z1, float z2, float z3, int color)
     {
         int x1 = (int) p1.getX(); int y1 = (int) p1.getY();
         int x2 = (int) p2.getX(); int y2 = (int) p2.getY();
