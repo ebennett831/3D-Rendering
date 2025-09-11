@@ -249,7 +249,47 @@ public class RenderPanel extends JPanel implements KeyListener {
         float xInt = p1.getX() + t * (p3.getX() - p1.getX());
 
         //middle vertex: right of left of triangle
-        boolean p2IsLeft = p2.getY() < xInt;
+        boolean p2IsLeft = p2.getX() < xInt;
+
+        //variables
+        Vector3 leftTopVertex, leftBottomVertex;
+        Vector3 rightTopVertex, rightBottomVertex;
+        Vector3 leftTopVertex2, leftBottomVertex2;
+        Vector3 rightTopVertex2, rightBottomVertex2;
+
+        //vertex is left
+        if (p2IsLeft)   
+        {
+            leftTopVertex = p1; 
+            leftBottomVertex = p2;
+
+            rightTopVertex = p1;
+            rightBottomVertex = p3;
+
+            leftTopVertex2 = p2;
+            leftBottomVertex2 = p3;
+            
+            rightTopVertex2 = p1;
+            rightBottomVertex2 = p3;
+        }
+
+        //vertex is right
+        else
+        {
+            leftTopVertex = p1; 
+            leftBottomVertex = p3;
+
+            rightTopVertex = p1;
+            rightBottomVertex = p2;
+
+            leftTopVertex2 = p1;
+            leftBottomVertex2 = p3;
+
+            rightTopVertex2 = p2;
+            rightBottomVertex2 = p3;
+        }
+
+        
 
         
 
