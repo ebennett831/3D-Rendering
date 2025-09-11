@@ -303,6 +303,47 @@ public class RenderPanel extends JPanel implements KeyListener {
         float rightDeltaZ2 = (rbz2 - rtz2) / (rightBottomVertex2.getY() - rightTopVertex2.getY());
 
 
+        //positions
+        float currentLeftX, currentLeftZ;
+        float currentRightX, currentRightZ;
+
+        int startY = (int) Math.ceil(p1.getY());
+        int midY = (int) Math.ceil(p2.getY());   
+        int endY = (int) Math.ceil(p3.getY()); 
+
+
+        //set positions for upper triangle
+        currentLeftX = leftTopVertex.getX();
+        currentLeftZ = ltz;
+        currentRightX = rightTopVertex.getX();
+        currentRightZ = rtz;
+
+        //upper triangle loop
+        for (int y = startY; y >= midY; y--)
+        {
+            currentLeftX += leftDeltaX;
+            currentRightX += rightDeltaX;
+
+            currentLeftZ += leftDeltaZ;
+            currentRightZ += rightDeltaZ;
+        }
+
+        //set positions for lower triangle
+        currentLeftX = leftTopVertex2.getX();
+        currentLeftZ = ltz2;
+        currentRightX = rightTopVertex2.getX();
+        currentRightZ = rtz2;
+
+        //lower triangle loop
+        for (int y = midY; y >= endY; y--)
+        {
+            currentLeftX += leftDeltaX2;
+            currentRightX += rightDeltaX2;
+
+            currentLeftZ += leftDeltaZ2;
+            currentRightZ += rightDeltaZ2;
+        }
+
 
 
         
