@@ -1,14 +1,14 @@
 
 package core;
 
+import geometry.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.util.*;
 import javax.swing.*;
-import math.Vector3;
 import math.Matrix4x4;
-import geometry.*;
+import math.Vector3;
 
 
 public class RenderPanel extends JPanel implements KeyListener {
@@ -225,15 +225,6 @@ public class RenderPanel extends JPanel implements KeyListener {
             temp = p1; tempf = z1;
             p1 = p2; z1 = z2;
             p2 = temp; z2 = tempf;
-
-            // check 2 vs 3
-            if (p2.getY() < p3.getY())
-            {
-                temp = p2; tempf = z2;
-                p2 = p3; z2 = z3;
-                p3 = temp; z3 = tempf;
-
-            }
         }
 
         //check 1 vs 3
@@ -242,15 +233,15 @@ public class RenderPanel extends JPanel implements KeyListener {
             temp = p1; tempf = z1;
             p1 = p3; z1 = z3;
             p3 = temp; z3 = tempf;
+        }
 
-            // check 2 vs 3
-            if (p2.getY() < p3.getY())
-            {
-                temp = p2; tempf = z2;
-                p2 = p3; z2 = z3;
-                p3 = temp; z3 = tempf;
+        // check 2 vs 3
+        if (p2.getY() < p3.getY())
+        {
+            temp = p2; tempf = z2;
+            p2 = p3; z2 = z3;
+            p3 = temp; z3 = tempf;
 
-            }
         }
 
     }
