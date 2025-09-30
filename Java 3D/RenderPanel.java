@@ -16,11 +16,11 @@ public class RenderPanel extends JPanel implements KeyListener {
     private BufferedImage buff;
     private float[][] zBuffer;
 
-    private Vector3 lightVector = new Vector3(-0.5f, -1.0f, -0.8f);
-    private float lightIntensity = 1.2f;
+    private Vector3 lightVector = new Vector3(0.0f, -3.0f, 2.0f);
+    private float lightIntensity = 2.0f;
     private Light3D light = new Light3D(lightVector, lightIntensity, Color.WHITE.getRGB());
 
-    private float ambientLight = 0.3f;  
+    private float ambientLight = 0.35f;  
     
 
     private Camera3D camera = new Camera3D(new Vector3(0, 0, 0), 0, 0, 0, (float) Math.PI / 2);
@@ -186,7 +186,9 @@ public class RenderPanel extends JPanel implements KeyListener {
 
         //cps.rotateZ(0.05f, cps.getCenter());
 
-        cps.drawCamPOV(this);
+        light.rotateX(0.1f, c3.getCenter());
+        c3.drawCamPOV(this);
+        //cps.drawCamPOV(this);
         //cps.drawCamPOV(this);
     }
 
@@ -222,12 +224,9 @@ public class RenderPanel extends JPanel implements KeyListener {
         Vector3[] pts = {p1, p2, p3};
         float[] zs = {z1, z2, z3};
 
-        for (int i = 0; i < 3; i++) 
-        {
-            for (int j = i + 1; j < 3; j++) 
-            {
-                if (pts[i].getY() > pts[j].getY()) 
-                {
+        for (int i = 0; i < 3; i++) {
+            for (int j = i + 1; j < 3; j++) {
+                if (pts[i].getY() > pts[j].getY()) {
                     Vector3 tmp = pts[i]; pts[i] = pts[j]; pts[j] = tmp;
                     float ztmp = zs[i]; zs[i] = zs[j]; zs[j] = ztmp;
                 }
@@ -242,38 +241,55 @@ public class RenderPanel extends JPanel implements KeyListener {
         int minY = Math.max(0, y1);
         int maxY = Math.min(HEIGHT - 1, y3);
 
-        for (int y = minY; y <= maxY; y++) 
-        {
+        Vector3 v0 = pts[0];
+        Vector3 v1 = pts[1];
+        Vector3 v2 = pts[2];
+
+        float z0 = zs[0];
+        float z1f = zs[1];
+        // float z2 = zs[2]; // removed duplicate
+
+        //calculate triangle normal
+        Vector3 edge1 = v1.subtract(v0);
+        Vector3 edge2 = v2.subtract(v0);
+        Vector3 triNormal = edge1.cross(edge2).normalize();
+
+        // For true Phong, assign the same normal to all vertices (flat surface)
+        Vector3 n0 = triNormal;
+        Vector3 n1 = triNormal;
+        Vector3 n2 = triNormal;
+
+        for (int y = minY; y <= maxY; y++) {
             //get x/z for left and right ends of the scanline
             float xA, xB, zA, zB;
+            Vector3 nA, nB;
 
             //lower part
-            if (y < y2) 
-            {
+            if (y < y2) {
                 float alpha = (y3 == y1) ? 0 : (float)(y - y1) / (y3 - y1);
                 float beta  = (y2 == y1) ? 0 : (float)(y - y1) / (y2 - y1);
-                xA = pts[0].getX() + (pts[2].getX() - pts[0].getX()) * alpha;
-                zA = zs[0] + (zs[2] - zs[0]) * alpha;
-                xB = pts[0].getX() + (pts[1].getX() - pts[0].getX()) * beta;
-                zB = zs[0] + (zs[1] - zs[0]) * beta;
-            } 
-            
-            //upper part
-            else 
-            {
+                xA = v0.getX() + (v2.getX() - v0.getX()) * alpha;
+                zA = z0 + (z2 - z0) * alpha;
+                nA = n0.add(n2.subtract(n0).scale(alpha));
+                xB = v0.getX() + (v1.getX() - v0.getX()) * beta;
+                zB = z0 + (z1f - z0) * beta;
+                nB = n0.add(n1.subtract(n0).scale(beta));
+            } else {
                 float alpha = (y3 == y1) ? 0 : (float)(y - y1) / (y3 - y1);
                 float beta  = (y3 == y2) ? 0 : (float)(y - y2) / (y3 - y2);
-                xA = pts[0].getX() + (pts[2].getX() - pts[0].getX()) * alpha;
-                zA = zs[0] + (zs[2] - zs[0]) * alpha;
-                xB = pts[1].getX() + (pts[2].getX() - pts[1].getX()) * beta;
-                zB = zs[1] + (zs[2] - zs[1]) * beta;
+                xA = v0.getX() + (v2.getX() - v0.getX()) * alpha;
+                zA = z0 + (z2 - z0) * alpha;
+                nA = n0.add(n2.subtract(n0).scale(alpha));
+                xB = v1.getX() + (v2.getX() - v1.getX()) * beta;
+                zB = z1f + (z2 - z1f) * beta;
+                nB = n1.add(n2.subtract(n1).scale(beta));
             }
 
             //ensure left and right endpoints are correct
-            if (xA > xB) 
-            {
+            if (xA > xB) {
                 float tx = xA; xA = xB; xB = tx;
                 float tz = zA; zA = zB; zB = tz;
+                Vector3 tn = nA; nA = nB; nB = tn;
             }
 
             //clamp to screen bounds
@@ -281,13 +297,51 @@ public class RenderPanel extends JPanel implements KeyListener {
             int maxX = Math.min(WIDTH - 1, (int)Math.floor(xB));
 
             //draw the scanline for the current y
-            for (int x = minX; x <= maxX; x++) 
-            {
+            for (int x = minX; x <= maxX; x++) {
                 float t = (xB == xA) ? 0 : (float)(x - xA) / (xB - xA);
                 float pz = zA + (zB - zA) * t;
-                if (pz < zBuffer[y][x] - 0.001f) 
-                {
-                    buff.setRGB(x, y, color);
+                if (pz < zBuffer[y][x] - 0.001f) {
+                    //interpolate normal
+                    Vector3 pixelNormal = nA.add(nB.subtract(nA).scale(t)).normalize();
+                    //interpolate position
+                    float px = x;
+                    float py = y;
+                    float pzWorld = pz;
+                    Vector3 pixelPos = new Vector3(px, py, pzWorld);
+
+                    //phong lighting calculation per pixel
+                    Vector3 lightDir = light.getPosition().subtract(pixelPos).normalize();
+                    Vector3 viewDir = camera.getPosition().subtract(pixelPos).normalize();
+                    Vector3 reflectDir = pixelNormal.scale(2.0f * pixelNormal.dot(lightDir)).subtract(lightDir).normalize();
+
+                    float ambient = ambientLight;
+                    float diffuse = Math.max(0, pixelNormal.dot(lightDir));
+                    float specularStrength = 0.8f; 
+                    float shininess = 16.0f;      
+                    float specular = (float)Math.pow(Math.max(0, viewDir.dot(reflectDir)), shininess);
+                    float intensity = light.getIntensity();
+
+                    float lightingFactor = Math.min(1.0f, ambient + (diffuse * intensity) + (specularStrength * specular));
+
+                    int baseColor = color;
+                    int r = (baseColor >> 16) & 0xFF;
+                    int g = (baseColor >> 8) & 0xFF;
+                    int b = baseColor & 0xFF;
+                    int a = (baseColor >> 24) & 0xFF;
+                    boolean hasAlpha = (baseColor >>> 24) != 0;
+
+                    r = Math.min(255, Math.max(0, Math.round(r * lightingFactor)));
+                    g = Math.min(255, Math.max(0, Math.round(g * lightingFactor)));
+                    b = Math.min(255, Math.max(0, Math.round(b * lightingFactor)));
+
+                    int shadedColor;
+                    if (hasAlpha) {
+                        shadedColor = (a << 24) | (r << 16) | (g << 8) | b;
+                    } else {
+                        shadedColor = (r << 16) | (g << 8) | b;
+                    }
+
+                    buff.setRGB(x, y, shadedColor);
                     zBuffer[y][x] = pz;
                 }
             }
