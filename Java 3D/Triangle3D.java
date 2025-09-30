@@ -228,7 +228,7 @@ public class Triangle3D extends Shape3D {
 
         int adjustedColor = rp.calculateLighting(color, normal, light);
 
-        rp.fillTriangle(screenPoint1, screenPoint2, screenPoint3, z1, z2, z3, adjustedColor);
+        rp.fillTriangleScanLine(screenPoint1, screenPoint2, screenPoint3, z1, z2, z3, adjustedColor);
     }
 
     public Vector3 getNormal()
