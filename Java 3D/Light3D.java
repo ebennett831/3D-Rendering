@@ -59,6 +59,34 @@ public class Light3D {
         position = position.add(origin);
     }
 
+    public void rotateY(float angleRadians)
+    {
+        Matrix4x4 rotationMatrix = Matrix4x4.createRotationY(angleRadians);
+        position = rotationMatrix.transform(position);
+    }
+
+    public void rotateY(float angleRadians, Vector3 origin)
+    {
+        Matrix4x4 rotationMatrix = Matrix4x4.createRotationY(angleRadians);
+        position = position.subtract(origin);
+        position = rotationMatrix.transform(position);
+        position = position.add(origin);
+    }
+
+    public void rotateZ(float angleRadians)
+    {
+        Matrix4x4 rotationMatrix = Matrix4x4.createRotationZ(angleRadians);
+        position = rotationMatrix.transform(position);
+    }
+
+    public void rotateZ(float angleRadians, Vector3 origin)
+    {
+        Matrix4x4 rotationMatrix = Matrix4x4.createRotationZ(angleRadians);
+        position = position.subtract(origin);
+        position = rotationMatrix.transform(position);
+        position = position.add(origin);
+    }
+
 
 
 
