@@ -1,8 +1,8 @@
-import javax.swing.*;
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
 import java.util.*;
+import javax.swing.*;
 
 
 public class RenderPanel extends JPanel implements KeyListener {
@@ -203,6 +203,84 @@ public class RenderPanel extends JPanel implements KeyListener {
             {
                 buff.setRGB(x, y, Color.WHITE.getRGB());
                 line = translation.transform(line);
+            }
+        }
+    }
+
+    public void fillTriangleScanLine(Vector3 p1, Vector3 p2, Vector3 p3, float z1, float z2, float z3, int color)
+    {
+        //sort vertices by y coordinate ascending (p1, p2, p3)
+        Vector3[] pts = {p1, p2, p3};
+        float[] zs = {z1, z2, z3};
+
+        for (int i = 0; i < 3; i++) 
+        {
+            for (int j = i + 1; j < 3; j++) 
+            {
+                if (pts[i].getY() > pts[j].getY()) 
+                {
+                    Vector3 tmp = pts[i]; pts[i] = pts[j]; pts[j] = tmp;
+                    float ztmp = zs[i]; zs[i] = zs[j]; zs[j] = ztmp;
+                }
+            }
+        }
+
+        int y1 = (int) pts[0].getY();
+        int y2 = (int) pts[1].getY();
+        int y3 = (int) pts[2].getY();
+
+        //min and max y for height bounds
+        int minY = Math.max(0, y1);
+        int maxY = Math.min(HEIGHT - 1, y3);
+
+        for (int y = minY; y <= maxY; y++) 
+        {
+            //get x/z for left and right ends of the scanline
+            float xA, xB, zA, zB;
+
+            //lower part
+            if (y < y2) 
+            {
+                float alpha = (y3 == y1) ? 0 : (float)(y - y1) / (y3 - y1);
+                float beta  = (y2 == y1) ? 0 : (float)(y - y1) / (y2 - y1);
+                xA = pts[0].getX() + (pts[2].getX() - pts[0].getX()) * alpha;
+                zA = zs[0] + (zs[2] - zs[0]) * alpha;
+                xB = pts[0].getX() + (pts[1].getX() - pts[0].getX()) * beta;
+                zB = zs[0] + (zs[1] - zs[0]) * beta;
+            } 
+            
+            //upper part
+            else 
+            {
+                float alpha = (y3 == y1) ? 0 : (float)(y - y1) / (y3 - y1);
+                float beta  = (y3 == y2) ? 0 : (float)(y - y2) / (y3 - y2);
+                xA = pts[0].getX() + (pts[2].getX() - pts[0].getX()) * alpha;
+                zA = zs[0] + (zs[2] - zs[0]) * alpha;
+                xB = pts[1].getX() + (pts[2].getX() - pts[1].getX()) * beta;
+                zB = zs[1] + (zs[2] - zs[1]) * beta;
+            }
+
+            //ensure left and right endpoints are correct
+            if (xA > xB) 
+            {
+                float tx = xA; xA = xB; xB = tx;
+                float tz = zA; zA = zB; zB = tz;
+            }
+
+            //clamp to screen bounds
+            int minX = Math.max(0, (int)Math.ceil(xA));
+            int maxX = Math.min(WIDTH - 1, (int)Math.floor(xB));
+
+            //draw the scanline for the current y
+            for (int x = minX; x <= maxX; x++) 
+            {
+                float t = (xB == xA) ? 0 : (float)(x - xA) / (xB - xA);
+                float pz = zA + (zB - zA) * t;
+                if (pz < zBuffer[y][x] - 0.001f) 
+                {
+                    buff.setRGB(x, y, color);
+                    zBuffer[y][x] = pz;
+                }
             }
         }
     }
