@@ -16,10 +16,13 @@ public class RenderPanel extends JPanel implements KeyListener {
     private BufferedImage buff;
     private float[][] zBuffer;
 
-    private Vector3 light = new Vector3(-0.5f, -1.0f, -0.8f);
+    private Vector3 lightVector = new Vector3(-0.5f, -1.0f, -0.8f);
+    private float lightIntensity = 1.2f;
+    private Light3D light = new Light3D(lightVector, lightIntensity, Color.WHITE.getRGB());
 
     private float ambientLight = 0.3f;  
-    private float lightIntensity = 1.2f; 
+    
+
     private Camera3D camera = new Camera3D(new Vector3(0, 0, 0), 0, 0, 0, (float) Math.PI / 2);
     
     //track pressed keys
@@ -69,7 +72,7 @@ public class RenderPanel extends JPanel implements KeyListener {
         buff = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_ARGB);
         resetZBuffer();
 
-        light = light.normalize();
+        //light = light.normalize();
 
         setFocusable(true);
         addKeyListener(this);
@@ -84,7 +87,7 @@ public class RenderPanel extends JPanel implements KeyListener {
                 zBuffer[x][y] = Float.MAX_VALUE;
     }
 
-    public Vector3 getLight()
+    public Light3D getLight()
     {
         return light;
     }
@@ -98,6 +101,11 @@ public class RenderPanel extends JPanel implements KeyListener {
     {
         super.paintComponent(g);
         g.drawImage(buff, 0, 0, null);
+        g.setColor(Color.WHITE); 
+        g.setFont(new Font("Arial", Font.BOLD, 16));
+        g.drawString(camera.positionToString(), 10, 20);
+        //g.drawString(camera.rotationToString(), 10, 40);
+
 
     }
 
@@ -335,15 +343,13 @@ public class RenderPanel extends JPanel implements KeyListener {
             }
     }
 
-    public int calculateLighting(int baseColor, Vector3 normal, Vector3 lightDirection) {
-
-        //dot product between normal and light
+    //new lighting calculation using Light3D
+    public int calculateLighting(int baseColor, Vector3 normal, Vector3 surfacePoint, Light3D light) {
+        //calculate direction from surface point to light position
+        Vector3 lightDirection = light.getPosition().subtract(surfacePoint).normalize();
         float dot = normal.dot(lightDirection);
-        
-        //apply lighting
-        float lightingFactor = Math.min(1.0f, ambientLight + (Math.max(0, dot) * lightIntensity));
-        
-        return adjustBrightness(baseColor, lightingFactor);
+        float lightingFactor = Math.min(1.0f, light.getAmbient() + (Math.max(0, dot) * light.getIntensity()));
+        return adjustBrightness(baseColor, lightingFactor, light.getAmbient(), light.getIntensity());
     }
 
     public static int adjustBrightness(int color, float scale) 

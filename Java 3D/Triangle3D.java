@@ -162,10 +162,9 @@ public class Triangle3D extends Shape3D {
         Vector3 projectedPoint3 = Matrix4x4.projectToScreen(point3, rp.getWidth(), rp.getHeight());
 
         Vector3 normal = getNormal();
-        Vector3 light = rp.getLight();
-
-        int adjustedColor = rp.calculateLighting(color, normal, light);
-
+        Light3D light = rp.getLight();
+        Vector3 surfacePoint = getCenter();
+        int adjustedColor = rp.calculateLighting(color, normal, surfacePoint, light);
         rp.fillTriangle(projectedPoint1, projectedPoint2, projectedPoint3, point1.getZ(), point2.getZ(), point3.getZ(), adjustedColor);
     }
 
@@ -223,11 +222,10 @@ public class Triangle3D extends Shape3D {
         //backface culling; don't render faces pointing away from camera
         if (normal.getZ() >= 0) return;
 
-        Vector3 light = rp.getLight();
-        light = viewMatrix.transform(light);
-
-        int adjustedColor = rp.calculateLighting(color, normal, light);
-
+        Light3D light = rp.getLight();
+        Vector3 transformedLightPos = viewMatrix.transform(light.getPosition());
+        Light3D transformedLight = new Light3D(transformedLightPos, light.getIntensity(), light.getColor());
+        int adjustedColor = rp.calculateLighting(color, normal, triangleCenter, transformedLight);
         rp.fillTriangleScanLine(screenPoint1, screenPoint2, screenPoint3, z1, z2, z3, adjustedColor);
     }
 

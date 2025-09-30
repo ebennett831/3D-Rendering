@@ -145,5 +145,26 @@ public class Camera3D {
         position = position.add(forwardVector.scale(distance));
     }
 
+    public Vector3 getPosition()
+    {
+        return position;
+    }
 
+    public String positionToString()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Camera X: " + position.getX() + " \n");
+        sb.append("Camera Y: " + position.getY() + " \n");
+        sb.append("Camera Z: " + position.getZ());
+        return sb.toString();
+    }
+
+    public String rotationToString()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Camera X Rotation: " + Math.toDegrees(pitch) + " \n");
+        sb.append("Camera Y Rotation: " + Math.toDegrees(yaw) + " \n");
+        sb.append("Camera Z Rotation: " + Math.toDegrees(roll));
+        return sb.toString();
+    }
 }
