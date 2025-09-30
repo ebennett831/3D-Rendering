@@ -216,7 +216,6 @@ public class RenderPanel extends JPanel implements KeyListener {
     }
 
 
-    //Add Phong lighting: per pixel lighting
     public void fillTriangleScanLine(Vector3 p1, Vector3 p2, Vector3 p3, float z1, float z2, float z3, int color)
     {
         //sort vertices by y coordinate ascending (p1, p2, p3)
