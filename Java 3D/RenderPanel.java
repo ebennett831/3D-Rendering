@@ -17,6 +17,7 @@ public class RenderPanel extends JPanel implements KeyListener {
     private float[][] zBuffer;
 
     private Vector3 light = new Vector3(-0.5f, -1.0f, -0.8f);
+
     private float ambientLight = 0.3f;  
     private float lightIntensity = 1.2f; 
     private Camera3D camera = new Camera3D(new Vector3(0, 0, 0), 0, 0, 0, (float) Math.PI / 2);
@@ -134,7 +135,6 @@ public class RenderPanel extends JPanel implements KeyListener {
 
     public void preStart()
     {
-    
         for (int x = -3; x <= 3; x++)
             for(int z = 1; z <=5; z++)
             {
@@ -207,6 +207,8 @@ public class RenderPanel extends JPanel implements KeyListener {
         }
     }
 
+
+    //Add Phong lighting: per pixel lighting
     public void fillTriangleScanLine(Vector3 p1, Vector3 p2, Vector3 p3, float z1, float z2, float z3, int color)
     {
         //sort vertices by y coordinate ascending (p1, p2, p3)
