@@ -185,12 +185,61 @@ public class RenderPanel extends JPanel implements KeyListener {
 
         //cps.rotateZ(0.05f, cps.getCenter());
 
-        light.rotateX(0.1f, c3.getCenter());
-        s.drawCamPOV(this);
-        c2.drawCamPOV(this);
-        //c3.drawCamPOV(this);
-        //cps.drawCamPOV(this);
-        //cps.drawCamPOV(this);
+    light.rotateX(0.01f, c3.getCenter());
+    drawLightGlow(light, camera); // Draw the glow after updating light position
+    s.drawCamPOV(this);
+    c2.drawCamPOV(this);
+    //c3.drawCamPOV(this);
+    //cps.drawCamPOV(this);
+    //cps.drawCamPOV(this);
+    }
+
+    // Helper to draw a simple glow for a Light3D object
+    private void drawLightGlow(Light3D light, Camera3D camera) {
+        // Full pipeline: world -> view -> projection -> screen
+        Vector3 lightWorld = light.getPosition();
+        Matrix4x4 viewMatrix = camera.getViewMatrix();
+        Matrix4x4 projMatrix = camera.getProjectionMatrix(WIDTH, HEIGHT);
+        Vector3 lightView = viewMatrix.transform(lightWorld);
+        Vector3 lightProj = projMatrix.transform(lightView);
+        Vector3 lightScreen = Matrix4x4.camProjectToScreen(lightProj, WIDTH, HEIGHT);
+        float z = lightView.getZ();
+        int screenX = (int) lightScreen.getX();
+        int screenY = (int) lightScreen.getY();
+        boolean valid = !(Float.isNaN(lightScreen.getX()) || Float.isNaN(lightScreen.getY()));
+        // Only draw if in front of camera, on screen, and not NaN
+        if (z > 0.5f && valid && screenX >= 0 && screenX < WIDTH && screenY >= 0 && screenY < HEIGHT) {
+            // Scale glow radius with distance (closer = bigger)
+            int baseRadius = 30;
+            int glowRadius = Math.max(8, (int)(baseRadius / (z * 0.5f)));
+            if (glowRadius > 80) glowRadius = 80; // Clamp max size
+            int glowColor = light.getColor();
+            float fade = Math.max(0.2f, 1.0f - (z / 30.0f)); // Fade with distance
+            for (int yy = -glowRadius; yy <= glowRadius; yy++) {
+                for (int xx = -glowRadius; xx <= glowRadius; xx++) {
+                    int px = screenX + xx;
+                    int py = screenY + yy;
+                    if (px >= 0 && px < WIDTH && py >= 0 && py < HEIGHT) {
+                        float dist = (float)Math.sqrt(xx*xx + yy*yy);
+                        if (dist <= glowRadius) {
+                            float alpha = (1.0f - (dist / glowRadius)) * fade;
+                            int r = (glowColor >> 16) & 0xFF;
+                            int g = (glowColor >> 8) & 0xFF;
+                            int b = glowColor & 0xFF;
+                            int base = buff.getRGB(px, py);
+                            int br = (base >> 16) & 0xFF;
+                            int bg = (base >> 8) & 0xFF;
+                            int bb = base & 0xFF;
+                            int nr = Math.min(255, (int)(br + r * alpha));
+                            int ng = Math.min(255, (int)(bg + g * alpha));
+                            int nb = Math.min(255, (int)(bb + b * alpha));
+                            int outColor = (nr << 16) | (ng << 8) | nb;
+                            buff.setRGB(px, py, outColor);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public void drawLine(Vector3 p1, Vector3 p2)
