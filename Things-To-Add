@@ -1,0 +1,7 @@
+1. Light3D class implemention
+2. Scene class with scene swapping capabilities
+3. Mess around with having multuple cameras and swapping between them in runtime
+4. Phong Lighting
+5. Make the light source visible
+6. Sphere3D
+
