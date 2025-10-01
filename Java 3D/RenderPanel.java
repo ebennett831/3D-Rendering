@@ -58,9 +58,8 @@ public class RenderPanel extends JPanel implements KeyListener {
 
     ArrayList<Cube3D> list = new ArrayList<>();
 
-    
+    Sphere3D s = new Sphere3D(new Vector3(0, 0, 5), 1, 100, 100, Color.ORANGE.getRGB());
 
-    //
 
     public RenderPanel(int h, int w)
     {
@@ -187,7 +186,9 @@ public class RenderPanel extends JPanel implements KeyListener {
         //cps.rotateZ(0.05f, cps.getCenter());
 
         light.rotateX(0.1f, c3.getCenter());
-        c3.drawCamPOV(this);
+        s.drawCamPOV(this);
+        c2.drawCamPOV(this);
+        //c3.drawCamPOV(this);
         //cps.drawCamPOV(this);
         //cps.drawCamPOV(this);
     }
