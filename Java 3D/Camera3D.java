@@ -79,6 +79,11 @@ public class Camera3D {
         //reseting the roll
         roll = 0;
     }
+
+    public float getFov() 
+    {
+        return fov;
+    }
     
     public void tranlate(float x, float y, float z)
     {
